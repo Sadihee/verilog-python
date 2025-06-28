@@ -144,10 +144,10 @@ class Language:
     def number_value(cls, number_string: str) -> Optional[int]:
         """Return the numeric value of a Verilog value, or None if incorrectly formed"""
         try:
-            # Remove any size specification
-            match = re.match(r'(\d+)\'([bdh])([0-9a-fA-F_xXzZ]+)', number_string)
-            if match:
-                size, base, value = match.groups()
+            # Handle signed numbers: 1'sh1, 32'sh1b, etc.
+            signed_match = re.match(r'(\d+)\'s([bdh])([0-9a-fA-F_xXzZ]+)', number_string)
+            if signed_match:
+                size, base, value = signed_match.groups()
                 # Convert to integer based on base
                 if base == 'b':
                     # Binary
@@ -161,24 +161,85 @@ class Language:
                     # Hexadecimal
                     value = value.replace('_', '').replace('x', '0').replace('z', '0')
                     return int(value, 16)
-            else:
-                # Simple decimal number
+            
+            # Handle unsigned numbers: 32'h1b, 4'b111, etc.
+            unsigned_match = re.match(r'(\d+)\'([bdh])([0-9a-fA-F_xXzZ]+)', number_string)
+            if unsigned_match:
+                size, base, value = unsigned_match.groups()
+                # Convert to integer based on base
+                if base == 'b':
+                    # Binary
+                    value = value.replace('_', '').replace('x', '0').replace('z', '0')
+                    return int(value, 2)
+                elif base == 'd':
+                    # Decimal
+                    value = value.replace('_', '').replace('x', '0').replace('z', '0')
+                    return int(value, 10)
+                elif base == 'h':
+                    # Hexadecimal
+                    value = value.replace('_', '').replace('x', '0').replace('z', '0')
+                    return int(value, 16)
+            
+            # Handle simple decimal numbers
+            if re.match(r'^\d+$', number_string):
                 return int(number_string)
+            
+            return None
         except (ValueError, AttributeError):
             return None
     
     @classmethod
+    def unsigned_to_signed(cls, x:int, n:int) -> int:
+        if (x >> (n - 1)) == 1:
+            signed_x = (1 << n) - x
+            return -signed_x
+        else:
+            return x
+    
+    @classmethod
     def number_bits(cls, number_string: str) -> Optional[int]:
         """Return the number of bits in a value string, or None if incorrectly formed"""
-        match = re.match(r'(\d+)\'[bdh]', number_string)
-        if match:
-            return int(match.group(1))
+        # Handle signed numbers: 1'sh1, 32'sh1b, etc.
+        signed_match = re.match(r'(\d+)\'(s\w)([a-f0-9A-F_]+)', number_string)
+        
+        if signed_match:
+            print(signed_match.groups())
+            if signed_match.group(2) == 'sb':
+                # Binary
+                value = signed_match.group(3).replace('_', '').replace('x', '0').replace('z', '0')
+                return cls.unsigned_to_signed(int(value, 2), int(signed_match.group(1)))
+            elif signed_match.group(2) == 'sd':
+                # Decimal
+                value = signed_match.group(3).replace('_', '').replace('x', '0').replace('z', '0')
+                return cls.unsigned_to_signed(int(value, 10), int(signed_match.group(1)))
+            elif signed_match.group(2) == 'sh':
+                # Hexadecimal
+                value = signed_match.group(3).replace('_', '').replace('x', '0').replace('z', '0')
+                return cls.unsigned_to_signed(int(value, 16), int(signed_match.group(1)))
+        
+        # Handle unsigned numbers: 32'h1b, 4'b111, etc.
+        unsigned_match = re.match(r'(\d+)\'(\w)([a-f0-9A-F_]+)', number_string)
+        if unsigned_match:
+            # print(unsigned_match.group(2))
+            if unsigned_match.group(2) == 'b':
+                # Binary
+                value = unsigned_match.group(3).replace('_', '').replace('x', '0').replace('z', '0')
+                return int(value, 2)
+            elif unsigned_match.group(2) == 'd':
+                # Decimal
+                value = unsigned_match.group(3).replace('_', '').replace('x', '0').replace('z', '0')
+                return int(value, 10)
+            elif unsigned_match.group(2) == 'h':
+                # Hexadecimal
+                value = unsigned_match.group(3).replace('_', '').replace('x', '0').replace('z', '0')
+                return int(value, 16)
         return None
     
     @classmethod
     def number_signed(cls, number_string: str) -> Optional[bool]:
         """Return true if the Verilog value is signed, else None"""
-        if 's' in number_string:
+        # Check for signed notation: 1'sh1, 32'sh1b, etc.
+        if re.match(r'\d+\'s[bdh]', number_string):
             return True
         return None
     
@@ -210,3 +271,14 @@ class Language:
         # Remove /* */ comments
         text = re.sub(r'/\*.*?\*/', '', text, flags=re.DOTALL)
         return text 
+
+
+
+
+
+
+
+
+
+ 
+    
