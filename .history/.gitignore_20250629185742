@@ -1,0 +1,3 @@
+./.gitignore
+./.history/*
+./verlog_python/__pycache__/*
