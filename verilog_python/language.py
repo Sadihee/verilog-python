@@ -112,11 +112,18 @@ class Language:
     @classmethod
     def is_keyword(cls, symbol: str, standard: Optional[str] = None) -> bool:
         """Return true if the given symbol string is a Verilog reserved keyword"""
+    
+        
         if standard:
-            lang = cls(standard)
+            if standard not in cls.KEYWORDS:
+                return False
+            else :
+                lang = cls(standard)
         else:
             lang = cls()
         return symbol in lang._all_keywords
+        
+
     
     @classmethod
     def is_compdirect(cls, symbol: str) -> bool:

@@ -5,8 +5,6 @@ This module provides command line option parsing and file handling for
 Verilog tools, similar to the behavior of commercial Verilog tools.
 """
 
-import os
-import re
 import sys
 from typing import List, Dict, Optional, Any, Tuple
 from pathlib import Path
@@ -18,21 +16,21 @@ class Getopt:
     def __init__(self, filename_expansion: bool = True):
         """Initialize Getopt with options"""
         self.filename_expansion = filename_expansion
-        self.defines = {}  # -D defines
-        self.include_paths = []  # -I include paths
-        self.files = []  # Input files
-        self.depend_files = []  # Files for dependency tracking
-        self.options = {}  # Other options
+        self.defines = {}           # -D defines
+        self.include_paths = []     # -I include paths
+        self.files = []             # Input files
+        self.depend_files = []      # Files for dependency tracking
+        self.options = {}           # Other options
         
         # Common Verilog tool options
         self.option_patterns = {
-            '-D': self._handle_define,
-            '-I': self._handle_include,
-            '-f': self._handle_file_list,
-            '-y': self._handle_library,
-            '+incdir+': self._handle_include,
-            '+define+': self._handle_define,
-            '+libext+': self._handle_libext,
+            '-D'        : self._handle_define,
+            '-I'        : self._handle_include,
+            '-f'        : self._handle_file_list,
+            '-y'        : self._handle_library,
+            '+incdir+'  : self._handle_include,
+            '+define+'  : self._handle_define,
+            '+libext+'  : self._handle_libext,
             '+liborder+': self._handle_liborder,
         }
     

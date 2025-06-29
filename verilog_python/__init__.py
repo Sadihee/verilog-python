@@ -15,10 +15,25 @@ Main components:
 __version__ = '1.0.0'
 
 from .language import Language
-from .parser import Parser, SigParser
+
 from .preproc import Preproc
-from .netlist import Netlist
+
 from .getopt import Getopt
+
+from .parser import Parser
+from .parser import SigParser
+from .parser import TokenType
+from .parser import Token
+
+from .netlist import Netlist
+from .netlist import Net
+from .netlist import Port
+from .netlist import Pin
+from .netlist import Cell
+from .netlist import Module
+
+
+
 
 __all__ = [
     'Language',
