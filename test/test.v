@@ -1,7 +1,7 @@
 
 `define DEBUG 1
 `define WIDTH 32
-
+   
 module test_module (
     input clk,
     input rst,
